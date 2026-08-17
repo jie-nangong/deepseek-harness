@@ -393,6 +393,7 @@ export function SessionNodeItem({ node, currentId, now, onOpen, onRename, onFork
       )}
       role="treeitem"
       aria-selected={selected}
+      data-session-id={node.id}
       onClick={() => { onOpen(node.id) }}
       draggable={drag !== undefined}
       onDragStart={drag === undefined

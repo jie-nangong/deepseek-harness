@@ -184,7 +184,8 @@ export function ConversationRoot({
   )
 
   return (
-    <div className={css.root} data-phase={phase}>
+    // data-session-id 供外部（桌面端对话同步脚本）读取当前会话。
+    <div className={css.root} data-phase={phase} data-session-id={sessionId ?? undefined}>
       {renderSlot('conversation.session.header', {})}
       <div className={css.scrollBody} data-conversation-scroll="">
         {renderSlot('conversation.session', {})}
