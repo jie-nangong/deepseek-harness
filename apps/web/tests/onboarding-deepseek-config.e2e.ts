@@ -203,7 +203,10 @@ describe.skipIf(MODE === 'record')('web e2e: first-run DeepSeek credential setup
     await deepSeek.waitFor({ timeout: 10_000 })
     await deepSeek.locator('xpath=ancestor::li').getByRole('button', { name: '编辑' }).click()
     await settings.getByText('自定义设置').click()
+    // 默认目录现为 3 个模型（v4-flash、v4-pro、v4-flash-vision-exp）：移除前两个，
+    // 只保留 v4-pro，再添加自定义模型——与「保留一个默认模型 + 自定义模型」的意图一致。
     await settings.getByRole('button', { name: /删除模型/ }).first().click()
+    await settings.getByRole('button', { name: '删除模型 2' }).click()
     await settings.getByRole('button', { name: '添加模型' }).click()
     const customModelId = settings.getByLabel('模型 ID 2')
     await customModelId.fill('private-preview')
