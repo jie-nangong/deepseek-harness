@@ -23,6 +23,13 @@ const REPOS = {
 }
 const PROXY = ['-c', 'http.proxy=http://127.0.0.1:7897', '-c', 'https.proxy=http://127.0.0.1:7897']
 
+/** 允许推送的 GitHub 账号（本人账号）。推送前校验目标远端归属，非本人账号一律拒绝，防止误推上游/他人仓库。 */
+const OWNER = 'jie-nangong'
+function ghOwner(url) {
+  const m = url.match(/(?:https?:\/\/github\.com\/|git@github\.com:|github\.com:)([^/]+)\//)
+  return m ? m[1] : null
+}
+
 const args = process.argv.slice(2)
 const flag = (f) => { const i = args.indexOf(f); return i >= 0 ? args[i + 1] : undefined }
 let name = flag('--name')
@@ -79,8 +86,15 @@ if (!committed) {
 }
 console.log(`已提交: ${commitMsg}`)
 
-// ---- 3. 推送 ----
+// ---- 3. 推送（先护栏：确认目标远端属于本人账号） ----
 if (noPush) { console.log(`--no-push 已跳过推送（${repo.remote}/${repo.branch}）`); process.exit(0) }
+const remoteUrl = gitOut('remote', 'get-url', repo.remote)
+const remoteOwner = ghOwner(remoteUrl)
+if (remoteOwner !== OWNER) {
+  console.log(`拒绝推送：远端 ${repo.remote} 归属账号 "${remoteOwner}"，非本人账号 "${OWNER}"（${remoteUrl}）`)
+  process.exit(1)
+}
+console.log(`远端护栏通过: ${repo.remote} -> ${remoteOwner}（本人账号）`)
 const pushed = gitPush('push', repo.remote, repo.branch)
 if (pushed) {
   console.log(`已推送: ${repo.remote}/${repo.branch} -> ${version}`)
