@@ -6,10 +6,10 @@
  *   harness  → deepseek-harness                → fork/sync-support
  *   desktop  → dsh-desktop                     → origin/main
  *
- * 用法：
- *   node bump-version.mjs --name harness --version 0.2.2
- *   node bump-version.mjs --name desktop --version 0.1.11
- *   node bump-version.mjs --name harness --version 0.2.2 --no-push   # 只改+提交，不推送
+ * 用法（在对应仓库目录内运行可省略 --name，自动识别）：
+ *   node bump-version.mjs --version 0.2.2                  # 自动识别当前仓库并推送
+ *   node bump-version.mjs --name desktop --version 0.1.11  # 显式指定
+ *   node bump-version.mjs --version 0.2.2 --no-push        # 只改+提交，不推送
  *
  * 约定：只更新根 package.json 的 version 字段；提交信息 chore(release): 本地版本号置为 <v>；
  *     推送带代理参数（127.0.0.1:7897）；工作区其他未跟踪/改动只提示、不纳入本次提交。
@@ -25,12 +25,20 @@ const PROXY = ['-c', 'http.proxy=http://127.0.0.1:7897', '-c', 'https.proxy=http
 
 const args = process.argv.slice(2)
 const flag = (f) => { const i = args.indexOf(f); return i >= 0 ? args[i + 1] : undefined }
-const name = flag('--name')
+let name = flag('--name')
 const version = flag('--version')
 const noPush = args.includes('--no-push')
 
+// 未显式指定 --name 时，按当前工作目录自动识别所属仓库（自动选对应远端/分支）。
+if (!name) {
+  const cwd = process.cwd().toLowerCase()
+  if (cwd.includes('deepseek-harness')) name = 'harness'
+  else if (cwd.includes('dsh-desktop')) name = 'desktop'
+}
+
 if (!name || !version) {
-  console.log('用法: node bump-version.mjs --name harness|desktop --version x.y.z [--no-push]')
+  console.log('用法: node bump-version.mjs [--name harness|desktop] --version x.y.z [--no-push]')
+  console.log('  未给 --name 时，按当前所在仓库目录自动识别并推送对应远端。')
   process.exit(1)
 }
 const repo = REPOS[name]
