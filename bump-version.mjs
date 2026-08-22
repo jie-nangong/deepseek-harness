@@ -12,8 +12,8 @@
  *   node bump-version.mjs --version 0.2.2 --no-push        # 只改+提交，不推送
  *   node bump-version.mjs --name desktop --version 0.1.11 --no-package  # desktop 更新但不打包
  *
- * 默认：target 为 desktop 时，推送完成后自动 npm run dist 打包（生成 dist\DSH-Desktop-Setup-<v>.exe）；
- *       用 --no-package 可跳过打包。harness 无安装包，不打包。
+ * 默认：target 为 desktop 时，推送完成后自动 npm run dist 打包（生成 dist\DSH-Desktop-Setup-<v>.exe），
+ *       并自动把旧版安装包归档到 dist\旧版本；用 --no-package 可跳过打包。harness 无安装包，不打包。
  *
  * 约定：只更新根 package.json 的 version 字段；提交信息 chore(release): 本地版本号置为 <v>；
  *     推送带代理参数（127.0.0.1:7897）；工作区其他未跟踪/改动只提示、不纳入本次提交。
@@ -109,6 +109,9 @@ if (pushed) {
     const pkgOut = run('cmd', ['/c', 'npm', 'run', 'dist'])
     if (pkgOut) {
       console.log(`已打包安装包: dist\\DSH-Desktop-Setup-${version}.exe`)
+      // 打包后自动归档旧版安装包到 dist\旧版本
+      const arch = run('node', [`${repo.path}/archive-installers.mjs`])
+      console.log(arch ? '旧版安装包已归档到 dist\\旧版本' : '归档未执行（可后跑 archive-installers.mjs）')
       process.exit(0)
     }
     console.log('打包失败，请检查 npm run dist 日志')
