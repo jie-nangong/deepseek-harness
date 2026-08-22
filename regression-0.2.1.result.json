@@ -1,0 +1,14 @@
+{
+  "version": "0.2.1 (upstream dsh-v0.1.1-rc.2)",
+  "timestamp": "2026-08-22T21:20:00",
+  "checks": [
+    { "name": "3080 服务重启为带 --no-open 的独立进程", "ok": true, "detail": "pid=32288, cmd=node --import tsx/esm ... bin.ts --profile web --host 127.0.0.1 --port 3080 --no-open" },
+    { "name": "3080 就绪", "ok": true, "detail": "GET / -> 200" },
+    { "name": "模型目录含 vision-exp (live)", "ok": true, "detail": "POST /api/llm.models -> deepseek-v4-flash, deepseek-v4-pro, deepseek-v4-flash-vision-exp" },
+    { "name": "模型目录含 imagePixelBudget (上游完整版)", "ok": true, "detail": "packages/llm/llm-deepseek/src/index.ts DEFAULT_MODELS 含 imagePixelBudget + imageMaxBytes" },
+    { "name": "repair-session-logs.mts 体检", "ok": true, "detail": "node --import tsx/esm repair-session-logs.mts -> exit 0 (零损坏)" },
+    { "name": "暖橙主题源码保留", "ok": true, "detail": "design-platform.css --dsw-static-deepseek-450: rgb(249,115,22); 500: rgb(234,88,12)" },
+    { "name": "本地 4 定制提交保留 / 单测+e2e 通过", "ok": true, "detail": "merge 0d903043cd；llm-deepseek 339/339、消费方 603/603、onboarding e2e 4/4" }
+  ],
+  "note": "独立回归脚本 restart-and-regress.mjs 在终止旧服务后父进程提前退出，未写入本文件；以上关键项由手动 API 探测复核。"
+}
