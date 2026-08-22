@@ -10,6 +10,10 @@
  *   node bump-version.mjs --version 0.2.2                  # 自动识别当前仓库并推送
  *   node bump-version.mjs --name desktop --version 0.1.11  # 显式指定
  *   node bump-version.mjs --version 0.2.2 --no-push        # 只改+提交，不推送
+ *   node bump-version.mjs --name desktop --version 0.1.11 --no-package  # desktop 更新但不打包
+ *
+ * 默认：target 为 desktop 时，推送完成后自动 npm run dist 打包（生成 dist\DSH-Desktop-Setup-<v>.exe）；
+ *       用 --no-package 可跳过打包。harness 无安装包，不打包。
  *
  * 约定：只更新根 package.json 的 version 字段；提交信息 chore(release): 本地版本号置为 <v>；
  *     推送带代理参数（127.0.0.1:7897）；工作区其他未跟踪/改动只提示、不纳入本次提交。
@@ -35,6 +39,7 @@ const flag = (f) => { const i = args.indexOf(f); return i >= 0 ? args[i + 1] : u
 let name = flag('--name')
 const version = flag('--version')
 const noPush = args.includes('--no-push')
+const noPackage = args.includes('--no-package')
 
 // 未显式指定 --name 时，按当前工作目录自动识别所属仓库（自动选对应远端/分支）。
 if (!name) {
@@ -98,6 +103,17 @@ console.log(`远端护栏通过: ${repo.remote} -> ${remoteOwner}（本人账号
 const pushed = gitPush('push', repo.remote, repo.branch)
 if (pushed) {
   console.log(`已推送: ${repo.remote}/${repo.branch} -> ${version}`)
+  // 默认打包（desktop 才有安装包；--no-package 跳过）
+  if (name === 'desktop' && !noPackage) {
+    console.log(`\n=== 默认打包 ${name} 安装包（--no-package 可跳过）===`)
+    const pkgOut = run('cmd', ['/c', 'npm', 'run', 'dist'])
+    if (pkgOut) {
+      console.log(`已打包安装包: dist\\DSH-Desktop-Setup-${version}.exe`)
+      process.exit(0)
+    }
+    console.log('打包失败，请检查 npm run dist 日志')
+    process.exit(1)
+  }
   process.exit(0)
 }
 console.log(`推送失败（请确认代理 127.0.0.1:7897 已开 / 网络可达）`)
